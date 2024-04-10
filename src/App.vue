@@ -1,16 +1,20 @@
 <template>
   <div class="header">
     <ul class="header-button-left">
-      <li>Cancel</li>
+      <li @click="confirm">Cancel</li>
     </ul>
     <ul class="header-button-right">
-      <li>Next</li>
+      <li v-if="step === 1" @click="step += 1">Next</li>
+      <li v-if="step === 2" @click="post">발행</li>
     </ul>
     <img src="./assets/logo.png" class="logo" />
   </div>
 
   <Container
     :instaData="instaData"
+    :step="step"
+    :uploadImage="uploadImage"
+    @content-update="content = $event"
   />
   <button
       type="button"
@@ -19,10 +23,12 @@
 
   <div class="footer">
     <ul class="footer-button-plus">
-      <input type="file" id="file" class="inputfile" />
+      <input @change="upload" type="file" id="file" class="inputfile" />
+      <!-- multiple: 여러 파일 받을 수 있음 / accept="image/*": 허용가능한 파일 목록 설정 -->
       <label for="file" class="input-plus">+</label>
     </ul>
   </div>
+
 </template>
 
 <script>
@@ -36,6 +42,9 @@ export default {
     return{
       instaData: instaData, // instaData
       btnclicked: 0,
+      step: 0,
+      uploadImage : '',
+      content: '',
     }
   },
   components: {
@@ -55,7 +64,32 @@ export default {
           this.btnclicked ++;
         })
       }
-    }
+    },
+    upload(e){
+      let imgFile = e.target.files;
+      this.step = 1;
+      let fileUrl = URL.createObjectURL(imgFile[0]);
+      this.uploadImage = fileUrl;
+    },
+    confirm(){
+      if(window.confirm('처음으로 돌아가시겠습니까?')){
+        this.step = 0
+      }
+    },
+    post(){
+      let newPost = {
+        name: "Minny",
+        userImage: "https://picsum.photos/100?random=5",
+        postImage: this.uploadImage,
+        likes: 49,
+        date: "Apr 4",
+        liked: false,
+        content: this.content,
+        filter: "lofi",
+      };
+      this.instaData.unshift(newPost);  // 맨 앞으로 추가
+      this.step = 0;
+    },
   }
 }
 </script>
